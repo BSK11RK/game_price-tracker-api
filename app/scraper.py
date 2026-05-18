@@ -38,7 +38,7 @@ def scrape_steam_game():
         # SteamDBアクセス
         page.goto(URL, wait_until="domcontentloaded")
         
-        # 手動突破待ち
+        # Cloudflare待機
         print()
         print("Cloudflare確認を待っています...")
         print("ブラウザ側で秒数待ってください")
@@ -95,13 +95,29 @@ def scrape_steam_game():
         
         price = float(cleaned_price)
         
-        # SQLite保存
+        # DBセッション
         session = SessionLocal()
         
-        game = Game(title=game_title, price=price)
+        # 既存ゲーム確認
+        existing_game = session.query(Game).filter(Game.title == game_title).first()
         
-        session.add(game)
+        # 存在しない場合
+        if existing_game is None:
+            print()
+            print("新規ゲーム -> INSERT")
+            
+            new_game = Game(title=game_title, price=price)
         
+            session.add(new_game)
+        
+        # 存在する場合
+        else:
+            print()
+            print("既存ゲーム -> UPDATE")
+            
+            existing_game.price = price
+        
+        # 保存
         session.commit()
         
         session.close()
