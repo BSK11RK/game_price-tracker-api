@@ -53,14 +53,7 @@ def scrape_steam_game():
         print("ページタイトル:")
         print(title)
         
-        # ゲームタイトル取得
-        game_title = page.locator("h1").first.text_content()
-        
-        print()
-        print("ゲームタイトル:")
-        print(game_title)
-        
-        # Bot Check判定
+        # Cloudflare判定
         if "Checking your browser" in title:
             print()
             print("Cloudflare突破失敗")
@@ -101,7 +94,7 @@ def scrape_steam_game():
         # 既存ゲーム確認
         existing_game = session.query(Game).filter(Game.title == game_title).first()
         
-        # 存在しない場合
+        # 新規ゲーム
         if existing_game is None:
             print()
             print("新規ゲーム -> INSERT")
@@ -110,12 +103,20 @@ def scrape_steam_game():
         
             session.add(new_game)
         
-        # 存在する場合
+        # 既存ゲーム
         else:
-            print()
-            print("既存ゲーム -> UPDATE")
-            
-            existing_game.price = price
+            # 価格変化チェック
+            if existing_game.price != price:
+                print()
+                print("価格変動あり -> UPDATE")
+                
+                print(f"{existing_game.price} -> {price}")
+                
+                existing_game.price = price
+                
+            else:
+                print()
+                print("価格変動なし")
         
         # 保存
         session.commit()
