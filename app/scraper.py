@@ -1,6 +1,6 @@
 from playwright.sync_api import sync_playwright
 from app.db import SessionLocal, engine
-from app.models import Base, Game
+from app.models import Base, Game, PriceHistory
 
 
 # テーブル作成
@@ -102,6 +102,13 @@ def scrape_steam_game():
             new_game = Game(title=game_title, price=price)
         
             session.add(new_game)
+            
+            session.commit()
+            
+            # 履歴保存
+            history = PriceHistory(game_id=new_game.id, price=price)
+            
+            session.add(history)
         
         # 既存ゲーム
         else:
@@ -112,7 +119,13 @@ def scrape_steam_game():
                 
                 print(f"{existing_game.price} -> {price}")
                 
+                # games更新
                 existing_game.price = price
+                
+                # 履歴追加
+                history = PriceHistory(game_id=existing_game.id, price=price)
+                
+                session.add(history)
                 
             else:
                 print()
