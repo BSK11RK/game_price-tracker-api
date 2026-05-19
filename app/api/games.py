@@ -1,27 +1,23 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query
 from app.db import SessionLocal
-from app.models import Game, PriceHistory
+from app.models import Game
 
 
-# FastAPI作成
-app = FastAPI(
-    title="Steam Price Tracker API",
-    description="Steamゲーム価格監視API",
-    version="1.0.0"
-)
+# Router
+router = APIRouter(prefix="/games", tags=["Games"])
 
 
-# ゲーム一覧取得 + 検索
-@app.get("/games")
+# ゲーム一覧 + 検索
+@router.get("")
 def get_games(title: str = Query(None)):
     session = SessionLocal()
     
     query = session.query(Game)
     
-    # 検索条件がある場合
+    # 検索
     if title:
         query = query.filter(Game.title.like(f"%{title}%"))
-    
+        
     games = query.all()
     
     result = []
@@ -40,7 +36,7 @@ def get_games(title: str = Query(None)):
 
 
 # 1件取得
-@app.get("/games/{game_id}")
+@router.get("/{game_id}")
 def get_game(game_id: int):
     session = SessionLocal()
     
@@ -57,24 +53,3 @@ def get_game(game_id: int):
         "price": game.price,
         "created_at": game.created_at
     }
-
-
-# 価格履歴取得
-@app.get("/history")
-def get_price_history():
-    session = SessionLocal()
-    
-    histories = session.query(PriceHistory).all()
-    
-    result = []
-    
-    for history in histories:
-        result.append({
-            "id": history.id,
-            "game_id": history.game_id,
-            "price": history.price,
-            "created_at": history.created_at
-        })
-        
-    session.close()
-    return result
