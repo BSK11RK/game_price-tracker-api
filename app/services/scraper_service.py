@@ -4,15 +4,20 @@ from app.utils.price_cleaner import clean_price
 
 
 # SteamDBスクレイピング
-def scrape_steam_game():
+def scrape_steam_game(app_id: int):
+    url = f"https://steamdb.info/app/{app_id}/"
+    
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         
         page = browser.new_page()
         
-        print("SteamDBへアクセス中...")
+        print()
+        print("=================================")
+        print(f"SteamDBアクセス: {app_id}")
+        print("=================================")
         
-        page.goto("https://steamdb.info/app/1245620/", wait_until="domcontentloaded")
+        page.goto(url, wait_until="domcontentloaded")
         
         # Cloudflare待機
         page.wait_for_timeout(5000)
@@ -49,6 +54,7 @@ def scrape_steam_game():
         browser.close()
         
         return {
+            "app_id": app_id,
             "title": title,
             "price": price
         }
