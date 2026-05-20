@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+
 from app.api.games import router as games_router
 from app.api.history import router as history_router
 

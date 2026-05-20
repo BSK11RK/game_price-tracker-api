@@ -8,4 +8,4 @@ def clean_price(price_text: str):
         .strip()
     )
     
-    return int(float(clean_price))
+    return int(float(cleaned_price))

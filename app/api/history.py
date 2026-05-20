@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+
 from app.db import SessionLocal
 from app.models import PriceHistory
 

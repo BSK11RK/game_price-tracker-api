@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
+
 from app.db import SessionLocal
 from app.models import Game, PriceHistory
 

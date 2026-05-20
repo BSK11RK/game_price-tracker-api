@@ -1,4 +1,5 @@
 from playwright.sync_api import sync_playwright
+
 from app.utils.price_cleaner import clean_price
 
 
