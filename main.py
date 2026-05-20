@@ -2,6 +2,11 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 from app.services.scraper_service import scrape_steam_game
 from app.services.game_service import save_game_data
+from app.db import Base, engine
+from app.models import Game, PriceHistory
+
+
+Base.metadata.create_all(bind=engine)
 
 
 # 監視ゲーム一覧
