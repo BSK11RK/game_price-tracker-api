@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.sql import func
-from datetime import datetime
 
 from app.db import Base
 
@@ -9,20 +8,20 @@ from app.db import Base
 class Game(Base):
     __tablename__ = "games"
     
-    id = Column(Integer, primary_key=True)
-    title = Column(String)
-    price = Column(Float)
-    created_at = Column(DateTime, default=datetime.now)
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    price = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     
 # 価格履歴テーブル
 class PriceHistory(Base):
     __tablename__ = "price_history"
     
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     game_id = Column(Integer, ForeignKey("games.id"))
-    price = Column(Float)
-    created_at = Column(DateTime, default=datetime.now)
+    price = Column(Integer, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     
 # 監視対象ゲーム

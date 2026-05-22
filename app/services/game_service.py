@@ -1,9 +1,9 @@
 from app.db import SessionLocal
-from app.models import Game, PriceHistory
+from app.models import Game, PriceHistory, WatchGame
 
 
 # DB保存
-def save_game_data(title: str, price: int):
+def save_game_data(title, price):
     session = SessionLocal()
     
     # 既存確認
@@ -14,18 +14,18 @@ def save_game_data(title: str, price: int):
         new_game = Game(title=title, price=price)
         
         session.add(new_game)
-        
         session.commit()
         session.refresh(new_game)
+        
+        print()
+        print("新規ゲーム保存")
+        print(title)
         
         # 履歴追加
         history = PriceHistory(game_id=new_game.id, price=price)
         
         session.add(history)
         session.commit()
-        
-        print()
-        print("新規保存しました")
         
     # 価格変更
     else:
@@ -36,19 +36,70 @@ def save_game_data(title: str, price: int):
             
             session.commit()
             
+            print()
+            print("価格更新")
+            print(title)
+            print(f"{old_price} → {price}")
+            
             # 履歴追加]
             history = PriceHistory(game_id=existing_game.id, price=price)
             
             session.add(history)
             session.commit()
             
-            print()
-            print("価格更新しました")
-            
-            print(f"{old_price} → {price}")
-            
         else:
             print()
-            print("価格変化なし")
+            print("価格変更なし")
+            print(title)
             
     session.close()
+    
+    
+# WatchGame一覧
+def get_watch_games():
+    session = SessionLocal()
+    
+    games = session.query(WatchGame).all()
+    
+    session.close()
+    
+    return games
+
+
+# WatchGame追加
+def create_watch_game(app_id):
+    session = SessionLocal()
+    
+    existing = session.query(WatchGame).filter(WatchGame.app_id == app_id).first()
+    
+    if existing:
+        session.close()
+        
+        return None
+    
+    game = WatchGame(app_id=app_id)
+    
+    session.add(game)
+    session.commit()
+    session.refresh(game)
+    session.close()
+    
+    return game
+
+
+# WatchGame削除
+def delete_watch_game(game_id):
+    session = SessionLocal()
+    
+    game = session.query(WatchGame).filter(WatchGame.id == game_id).first()
+    
+    if game is None:
+        session.close()
+        
+        return False
+    
+    session.delete(game)
+    session.commit()
+    session.close()
+    
+    return True

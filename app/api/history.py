@@ -5,7 +5,7 @@ from app.models import PriceHistory
 
 
 # Router
-router = APIRouter(prefix="/history", tags=["History"])
+router = APIRouter(prefix="/history", tags=["価格履歴"])
 
 
 # 価格履歴一覧

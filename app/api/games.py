@@ -5,7 +5,7 @@ from app.models import Game, PriceHistory
 
 
 # Router
-router = APIRouter(prefix="/games", tags=["Games"])
+router = APIRouter(prefix="/games", tags=["ゲーム"])
 
 
 # ゲーム一覧 + 検索
