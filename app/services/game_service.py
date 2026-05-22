@@ -1,8 +1,9 @@
 from app.db import SessionLocal
 from app.models import Game, PriceHistory, WatchGame
+from app.services.scraper_service import get_game_title
 
 
-# DB保存
+# ゲーム保存
 def save_game_data(title, price):
     session = SessionLocal()
     
@@ -77,7 +78,10 @@ def create_watch_game(app_id):
         
         return None
     
-    game = WatchGame(app_id=app_id)
+    # タイトル取得
+    title = get_game_title(app_id)
+    
+    game = WatchGame(app_id=app_id, title=title)
     
     session.add(game)
     session.commit()

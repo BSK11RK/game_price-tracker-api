@@ -8,7 +8,7 @@ def scrape_steam_game(app_id: int):
     url = f"https://steamdb.info/app/{app_id}/"
     
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=True)
         
         page = browser.new_page()
         
@@ -58,3 +58,10 @@ def scrape_steam_game(app_id: int):
             "title": title,
             "price": price
         }
+        
+        
+# タイトルのみ取得
+def get_game_title(app_id: int):
+    data = scrape_steam_game(app_id)
+    
+    return data["title"]

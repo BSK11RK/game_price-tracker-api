@@ -37,7 +37,9 @@ def seed_watch_games():
         ]
         
         for app_id in default_games:
-            game = WatchGame(app_id=app_id)
+            game_data = scrape_steam_game(app_id)
+            
+            game = WatchGame(app_id=app_id, title=game_data["title"])
             
             session.add(game)
             

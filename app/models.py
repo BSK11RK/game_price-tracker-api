@@ -30,4 +30,5 @@ class WatchGame(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     app_id = Column(Integer, unique=True, nullable=False)
+    title = Column(String, nullable=False)
     enabled = Column(Boolean, default=True)

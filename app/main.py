@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.api.games import router as games_router
 from app.api.history import router as history_router
+from app.api.watch_games import router as watch_games_router
 
 
 # FastAPI
@@ -17,5 +18,5 @@ app = FastAPI(
 
 # Router登録
 app.include_router(games_router)
-
 app.include_router(history_router)
+app.include_router(watch_games_router)
