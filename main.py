@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 from app.db import Base, engine, SessionLocal
-from app.models import Game, PriceHistory, WatchGame
+from app.models import PriceHistory, WatchGame
 from app.services.scraper_service import scrape_steam_game
 from app.services.game_service import save_game_data
 from app.api.games import router as games_router
@@ -36,20 +36,42 @@ def seed_watch_games():
             1623730   # Palworld
         ]
         
-        for app_id in default_games:
-            game_data = scrape_steam_game(app_id)
-            
-            game = WatchGame(app_id=app_id, title=game_data["title"])
-            
-            session.add(game)
-            
-        session.commit()
-        
         print()
-        print("初期監視ゲーム登録完了")
+        print("初期監視ゲーム登録開始")
         
-        session.close()
+        for app_id in default_games:
+            try:
+                game_data = scrape_steam_game(app_id)
+                
+                game = WatchGame(
+                    app_id=app_id, 
+                    title=game_data["title"],
+                    current_price=game_data["price"],
+                    lowest_price=game_data["price"],
+                    enabled=True
+                )
+                
+                session.add(game)
+                session.commit()
+                
+                # 初期履歴保存
+                history = PriceHistory(watch_game_id=game.id, price=game_data["price"])
+                
+                session.add(history)
+                session.commit()
+                
+                print()
+                print("登録完了")
+                print(game_data["title"])
 
+            except Exception as e:
+                print()
+                print("初期登録エラー")
+                
+                print(e)
+                
+    session.close()
+        
 
 # スクレイピング実行
 def run_scraping():
@@ -68,6 +90,7 @@ def run_scraping():
             game_data = scrape_steam_game(watch_game.app_id)
             
             save_game_data(
+                app_id=game_data["app_id"],
                 title=game_data["title"],
                 price=game_data["price"]
             )
@@ -75,7 +98,7 @@ def run_scraping():
         except Exception as e:
             
             print()
-            print("エラー発生")
+            print("監視エラー")
     
             print(e)
         
@@ -90,7 +113,7 @@ scheduler = BlockingScheduler()
 
 
 # 定期実行設定
-scheduler.add_job(run_scraping, "interval", minutes=5)
+scheduler.add_job(run_scraping, "interval", minutes=30)
 
 
 # FastAPI起動
@@ -101,7 +124,7 @@ def start_api():
 # 開始
 print()
 print("=================================")
-print("Steam価格監視BOT")
+print("Steam価格監視BOT 起動")
 print("=================================")
 
 
@@ -113,6 +136,7 @@ seed_watch_games()
 run_scraping()
 
 
+# API起動
 api_thread = threading.Thread(target=start_api)
 
 api_thread.start()

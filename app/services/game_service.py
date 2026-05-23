@@ -1,39 +1,48 @@
 from app.db import SessionLocal
-from app.models import Game, PriceHistory, WatchGame
-from app.services.scraper_service import get_game_title
+from app.models import PriceHistory, WatchGame
+from app.services.scraper_service import scrape_steam_game
 
 
 # ゲーム保存
-def save_game_data(title, price):
+def save_game_data(app_id, title, price):
     session = SessionLocal()
     
     # 既存確認
-    existing_game = session.query(Game).filter(Game.title == title).first()
+    existing_game = session.query(WatchGame).filter(WatchGame.app_id == app_id).first()
     
     # 新規
     if existing_game is None:
-        new_game = Game(title=title, price=price)
+        game = WatchGame(
+            app_id=app_id,
+            title=title, 
+            current_price=price,
+            lowest_price=price
+        )
         
-        session.add(new_game)
+        session.add(game)
         session.commit()
-        session.refresh(new_game)
+        session.refresh(game)
         
         print()
         print("新規ゲーム保存")
         print(title)
         
         # 履歴追加
-        history = PriceHistory(game_id=new_game.id, price=price)
+        history = PriceHistory(watch_game_id=game.id, price=price)
         
         session.add(history)
         session.commit()
         
     # 価格変更
     else:
-        if existing_game.price != price:
-            old_price = existing_game.price
+        if existing_game.current_price != price:
+            old_price = existing_game.current_price
             
-            existing_game.price = price
+            existing_game.current_price = price
+            
+            # 最安値更新
+            if price < existing_game.lowest_price:
+                existing_game.lowest_price = price
             
             session.commit()
             
@@ -43,7 +52,7 @@ def save_game_data(title, price):
             print(f"{old_price} → {price}")
             
             # 履歴追加]
-            history = PriceHistory(game_id=existing_game.id, price=price)
+            history = PriceHistory(watch_game_id=existing_game.id, price=price)
             
             session.add(history)
             session.commit()
@@ -56,7 +65,7 @@ def save_game_data(title, price):
     session.close()
     
     
-# WatchGame一覧
+# 監視ゲーム一覧
 def get_watch_games():
     session = SessionLocal()
     
@@ -67,7 +76,7 @@ def get_watch_games():
     return games
 
 
-# WatchGame追加
+# 監視ゲーム追加
 def create_watch_game(app_id):
     session = SessionLocal()
     
@@ -78,14 +87,24 @@ def create_watch_game(app_id):
         
         return None
     
-    # タイトル取得
-    title = get_game_title(app_id)
+    # Steam取得
+    game_data = scrape_steam_game(app_id)
     
-    game = WatchGame(app_id=app_id, title=title)
+    game = WatchGame(
+        app_id=app_id,
+        title=game_data["title"],
+        current_price=game_data["price"],
+        lowest_price=game_data["price"]
+    )
     
     session.add(game)
     session.commit()
     session.refresh(game)
+    
+    history = PriceHistory(watch_game_id=game.id, price=game.current_price)
+    
+    session.add(history)
+    session.commit()
     session.close()
     
     return game
