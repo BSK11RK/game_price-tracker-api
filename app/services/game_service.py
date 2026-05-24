@@ -126,3 +126,23 @@ def delete_watch_game(game_id):
     session.close()
     
     return True
+
+
+# 監視ON/OFF切替
+def update_watch_game_enabled(game_id, enabled):
+    session = SessionLocal()
+    
+    game = session.query(WatchGame).filter(WatchGame.id == game_id).first()
+    
+    if game is None:
+        session.close()
+        
+        return None
+    
+    game.enabled = enabled
+    
+    session.commit()
+    session.refresh(game)
+    session.close()
+    
+    return game
