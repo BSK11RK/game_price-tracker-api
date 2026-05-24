@@ -20,12 +20,18 @@ class WatchGameCreate(BaseModel):
     
 class WatchGameUpdate(BaseModel):
     enabled: bool
-    
+
     
 # 一覧取得
 @router.get("/")
 def get_all_watch_games():
     return get_watch_games()
+
+
+# 検索
+@router.get("/search/")
+def search(keyword: str = Query(...)):
+    return search_watch_games(keyword)
 
 
 # 1件取得
@@ -37,12 +43,6 @@ def get_one(game_id: int):
         raise HTTPException(status_code=404, detail="ゲームが見つかりません")
     
     return game
-
-
-# 検索
-@router.get("/search")
-def search(keyword: str = Query(...)):
-    return search_watch_games(keyword)
 
 
 # 追加
